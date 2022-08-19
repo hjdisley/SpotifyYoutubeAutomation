@@ -9,24 +9,23 @@ class GenerateSpotifyURI(Resource):
         self.spotify_user_id = app.config.get('SPOTIFY_USER_ID')
 
     def get(self, song_name, artist_name):
-        print('artist: ' + artist_name)
-        print('song_name: ' + song_name)
+        try:
+            query = "https://api.spotify.com/v1/search?query=track:{}%20artist:{}&type=track&offset=0&limit=1".format(song_name, artist_name)
 
-        print(self.search_token)
-        query = "https://api.spotify.com/v1/search?query=track:{}%20artist:{}&type=track&offset=0&limit=1".format(song_name, artist_name)
+            headers={
+                "Content-Type":"application/json","Authorization": "Bearer {}".format(self.search_token)
+            }
 
-        headers={
-            "Content-Type":"application/json","Authorization": "Bearer {}".format(self.search_token)
-        }
+            response = requests.get(query, headers=headers)
+            response_json = response.json()
 
-        response = requests.get(query, headers=headers)
-        response_json = response.json()
+            song = response_json['tracks']['items']
+            
+            song_uri = song[0]['uri']
 
-        print(response_json, song_name, artist_name)
-
-        # song = response_json['tracks']['items']
-
-        # print(song, 'song')
+            return song_uri
         
-        
+        except Exception as e:
+            print(e)
+            return 'Song not found'
 
